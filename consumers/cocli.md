@@ -23,3 +23,34 @@ cocli's ADR set stays product-specific and does not carry the spec itself.
 **Do not duplicate here:** cocli's actual station declarations (paths, Pydantic models,
 `datapackage.json` schemas) are product-specific and stay in cocli. Only the vocabulary and
 method are shared.
+
+**The extraction cut line is three-tier, not two-tier.** Surfaced 2026-07-15 after a
+reviewer read cocli's `cocli/application/` vs `cocli/services/` split as evidence the
+extraction boundary was getting fuzzy (e.g. `ClusterService` landing in `services/` while
+most new Phase-5 extractions land in `application/`). It isn't fuzzy — it's two separate
+boundaries that happen to look like one:
+
+```
+cocli/core/                      ← only extraction candidate (→ stations substrate)
+cocli/application/ + services/   ← both product-specific; stay in cocli forever
+cocli/commands/                  ← thin Typer adapters over the product tiers
+```
+
+1. **Extraction axis** — `cocli/core/` holds the queue/WAL/index primitives (cache, audit,
+   DFQ machinery) this pattern was distilled from. **This is the only tier that eventually
+   moves to `stations`.** Neither `application/` nor `services/` is an extraction candidate.
+2. **Intra-product axis** — `cocli/application/` (domain/orchestration) vs
+   `cocli/services/` (low-level infra drivers — SSH, Docker, S3, WAL ops). Both are
+   product-specific and stay in cocli permanently. The split between them is
+   orchestration-vs-driver responsibility *within* cocli, not extractability.
+   `ClusterService` (SSH cluster ops, `docker` commands) is infra-driver work, same tier
+   as the S3/WAL drivers already in `services/` — correctly placed, not inconsistent.
+
+Rule of thumb: only code in `core/`'s typed-path-queue substrate is ever a candidate for
+this repo. Everything in `application/` or `services/` is cocli product code regardless of
+which of those two directories a module lives in. When reviewing placement: ask extraction
+first (core vs product), then — only if product — ask orchestration vs infra-driver.
+
+Implementer-facing copy of the same rule (directory tree + import-linter) lives in the
+cocli worktree: `CLAUDE.md` ("Three-tier layering") and `docs/cli/target-tree.md` §3.1.
+This consumer onramp is the stations-repo source of truth for *what extracts*.
