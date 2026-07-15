@@ -16,10 +16,9 @@ product-coupled language.
   LSM-tree-shaped index maintenance this pattern's trichotomy formalizes.
 
 **Open task:** `design-spec-for-reusable-typed-file-path-queue-transformer-library-extracted-from-cocli`
-(cocli's task queue) — the reference-implementation extraction. Its completion criteria
-currently target `docs/adr/` *inside* cocli; pending decision whether the spec/ADR content
-should instead land here, in [decisions/](../decisions/), with cocli's own ADR reduced to a
-pointer.
+(cocli's task queue) — the reference-implementation extraction. As of 2026-07-14 its
+completion criteria target `stations/decisions/` (this repo), not cocli's own `docs/adr/`;
+cocli's ADR set stays product-specific and does not carry the spec itself.
 
 **Do not duplicate here:** cocli's actual station declarations (paths, Pydantic models,
 `datapackage.json` schemas) are product-specific and stay in cocli. Only the vocabulary and
