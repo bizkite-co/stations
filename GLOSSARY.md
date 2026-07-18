@@ -51,7 +51,8 @@ of a log for a different reader — hence edge roles attach to edges, not statio
 The per-backend primitive that lets exactly one worker take ownership of a queue item:
 POSIX atomic rename locally, S3 conditional PUT/If-None-Match remotely. This is the part
 general-purpose filesystem libraries (e.g. fsspec) don't provide — it's the actual
-load-bearing IP of any implementation of this pattern.
+load-bearing IP of any implementation of this pattern. Full state machine:
+[spec/CONCURRENCY.md](./spec/CONCURRENCY.md) §2.
 
 ## Single-writer rule
 
@@ -59,13 +60,15 @@ Each index (or any derived/ratified station) has exactly one writer-class: the c
 or ratification transition that folds the log into it. Other processes may read; only that
 one role may write the authoritative set. This is what makes emission edges (below) safe:
 an emission is a *proposal* into another station's intake, never a direct write into its
-ratified set.
+ratified set. Enforcement (lock for liveness, CAS commit for safety):
+[spec/CONCURRENCY.md](./spec/CONCURRENCY.md) §4.
 
 ## Watermark
 
 The marker on a derived station stating how much of the source log has been folded into
 it — the freshness/staleness signal. An index without a watermark is not trustworthy as
-"current."
+"current." Physical form (the `CURRENT` commit pointer; implicit vs. explicit frontiers):
+[spec/PHYSICAL-CONTRACT.md](./spec/PHYSICAL-CONTRACT.md) §6.
 
 ## Portable task
 
