@@ -54,3 +54,9 @@ first (core vs product), then — only if product — ask orchestration vs infra
 Implementer-facing copy of the same rule (directory tree + import-linter) lives in the
 cocli worktree: `CLAUDE.md` ("Three-tier layering") and `docs/cli/target-tree.md` §3.1.
 This consumer onramp is the stations-repo source of truth for *what extracts*.
+
+**Strangler migration** into the `stations` reference package:
+[decisions/0006-strangler-migration-from-cocli.md](../decisions/0006-strangler-migration-from-cocli.md).
+Protocol surface to target: [spec/PROTOCOLS.md](../spec/PROTOCOLS.md). Overlapping cocli
+tasks (build-protocols, WASI data access, WASI compaction) are disposed in
+[decisions/0007-disposition-overlapping-cocli-tasks.md](../decisions/0007-disposition-overlapping-cocli-tasks.md).

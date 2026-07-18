@@ -27,13 +27,15 @@ machine, and code is just what moves things between states.
   Link here, don't redefine elsewhere.
 - **[METHOD.md](./METHOD.md)** — the Station Map procedure: how to point this vocabulary at
   an arbitrary existing system and have it produce its own conformance gap list.
-- **[spec/](./spec/)** — the on-disk contract, in two halves:
-  [PHYSICAL-CONTRACT.md](./spec/PHYSICAL-CONTRACT.md) (bytes on disk: layouts, formats,
-  watermarks — the static invariants) and [CONCURRENCY.md](./spec/CONCURRENCY.md) (leases,
-  compaction, crash recovery — the dynamic state machines). The glossary names concepts;
-  the spec pins them down so independent implementations can't diverge.
+- **[spec/](./spec/)** — the on-disk contract and its Python projection:
+  [PHYSICAL-CONTRACT.md](./spec/PHYSICAL-CONTRACT.md) (bytes on disk),
+  [CONCURRENCY.md](./spec/CONCURRENCY.md) (leases, compaction, crash recovery),
+  [PROTOCOLS.md](./spec/PROTOCOLS.md) (Python `typing.Protocol` surface for the
+  reference implementation). The glossary names concepts; the spec pins them down.
 - **[decisions/](./decisions/)** — an append-only log of concept decisions (this repo eats
-  its own dog food: decisions are a WAL, this README is a fold of it).
+  its own dog food: decisions are a WAL, this README is a fold of it). Key decisions:
+  emission edges (0001), cross-repo identity (0002), packaging (0005), strangler from
+  cocli (0006), disposition of overlapping WASI/protocol tasks (0007).
 - **[consumers/](./consumers/)** — one thin onramp doc per system that adopts this
   vocabulary. Each onramp *links back* here rather than copying definitions — station
   membership is path-encoded and changes as records move, so identity beats path (see
@@ -41,9 +43,11 @@ machine, and code is just what moves things between states.
 
 ## Status
 
-Pre-library. Two systems (`cocli`, `task-agent`) are dogfooding the vocabulary today; no
-code has been extracted yet. The reference implementation, when it exists, will be a
-separate package this repo's `decisions/` will link to, not replace.
+Pre-library. Pattern language + on-disk contract + Protocol surface are drafted; two
+systems (`cocli`, `task-agent`) dogfood the vocabulary. No runtime package extracted yet
+— packaging layout is decided (`python/`, [0005](./decisions/0005-packaging-and-reference-implementation.md));
+implementation follows the strangler plan ([0006](./decisions/0006-strangler-migration-from-cocli.md)).
+Awaiting maintainer review/ratification of proposed decisions 0005–0007.
 
 ## Provenance
 
