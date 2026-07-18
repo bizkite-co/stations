@@ -1,2 +1,10 @@
 .task-agent/
 .task-agent
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+dist/
+build/

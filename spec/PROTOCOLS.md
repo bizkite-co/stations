@@ -140,9 +140,10 @@ class IndexEdge(Protocol[T]):
 ```python
 class Transform(Protocol[T_in, T_out]):
     """Pure 1:1 model-to-model function. No I/O. ADR-001 generalized.
-    Decorator target: @transform(from_station=..., to_station=...)."""
+    Decorator target: @transform(from_station=..., to_station=...).
+    Positional-only so plain functions structurally match."""
 
-    def __call__(self, src: T_in) -> T_out: ...
+    def __call__(self, src: T_in, /) -> T_out: ...
 
 class Fold(Protocol[T_in, T_out]):
     """Pure N:1 aggregation. Deterministic and idempotent (CONCURRENCY C7).
