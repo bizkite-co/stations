@@ -27,6 +27,11 @@ machine, and code is just what moves things between states.
   Link here, don't redefine elsewhere.
 - **[METHOD.md](./METHOD.md)** — the Station Map procedure: how to point this vocabulary at
   an arbitrary existing system and have it produce its own conformance gap list.
+- **[spec/](./spec/)** — the on-disk contract, in two halves:
+  [PHYSICAL-CONTRACT.md](./spec/PHYSICAL-CONTRACT.md) (bytes on disk: layouts, formats,
+  watermarks — the static invariants) and [CONCURRENCY.md](./spec/CONCURRENCY.md) (leases,
+  compaction, crash recovery — the dynamic state machines). The glossary names concepts;
+  the spec pins them down so independent implementations can't diverge.
 - **[decisions/](./decisions/)** — an append-only log of concept decisions (this repo eats
   its own dog food: decisions are a WAL, this README is a fold of it).
 - **[consumers/](./consumers/)** — one thin onramp doc per system that adopts this
