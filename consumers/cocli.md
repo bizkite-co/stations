@@ -26,8 +26,8 @@ method are shared.
 
 **The extraction cut line is three-tier, not two-tier.** Surfaced 2026-07-15 after a
 reviewer read cocli's `cocli/application/` vs `cocli/services/` split as evidence the
-extraction boundary was getting fuzzy (e.g. `ClusterService` landing in `services/` while
-most new Phase-5 extractions land in `application/`). It isn't fuzzy — it's two separate
+extraction boundary was getting fuzzy (e.g. `ClusterService` placed in `services/` while
+most new Phase-5 extractions go to `application/`). It isn't fuzzy — it's two separate
 boundaries that happen to look like one:
 
 ```

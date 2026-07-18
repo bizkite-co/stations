@@ -1,5 +1,5 @@
 ---
-status: proposed
+status: ratified
 date: 2026-07-17
 ---
 
@@ -10,7 +10,7 @@ date: 2026-07-17
 cocli already implements most of the on-disk contract in product form
 (ADR-010/011/013, `wal-strategy.md`, `compaction-and-checkpointing.md`,
 filesystem/S3 queues). The design-spec goal is extraction, not redesign. The
-falsifiability test from METHOD.md: when the reference implementation lands,
+falsifiability test from METHOD.md: once the reference implementation exists,
 refactoring cocli onto it should require **no on-disk format change**.
 
 ## Decision — strangler phases
@@ -34,7 +34,7 @@ refactoring cocli onto it should require **no on-disk format change**.
 
 ### Phase 2 — Backend claim primitive unification
 
-1. Land `stations.backends` (local + S3) implementing `PathBackend` + claim CAS.
+1. Implement `stations.backends` (local + S3): `PathBackend` + claim CAS.
 2. Re-point cocli queue claim/release through the stations backend, keeping
    cocli path layouts and file names unchanged.
 3. Delete duplicated claim code paths only when tests prove equivalence.
@@ -76,7 +76,7 @@ refactoring cocli onto it should require **no on-disk format change**.
 ## Coordination with the CLI consolidation epic
 
 - Phase 4/5 service extractions in cocli **should** type-hint against
-  `stations.protocols` once Phase 1 lands — avoids double refactor.
+  `stations.protocols` once Phase 1 is complete — avoids double refactor.
 - Service extraction does **not** wait for Phase 2–4. Thin Typer adapters over
   application services continue independently (already underway).
 

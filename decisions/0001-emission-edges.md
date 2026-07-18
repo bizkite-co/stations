@@ -69,7 +69,7 @@ emits:
 ```
 
 The completion transition routes the attachment to the declared intake station, stamping
-the back-link; the emitted record as it lands:
+the back-link; the emitted record as it arrives in the intake station:
 
 ```yaml
 ---

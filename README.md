@@ -47,7 +47,7 @@ Pre-library. Pattern language + on-disk contract + Protocol surface are drafted;
 systems (`cocli`, `task-agent`) dogfood the vocabulary. No runtime package extracted yet
 — packaging layout is decided (`python/`, [0005](./decisions/0005-packaging-and-reference-implementation.md));
 implementation follows the strangler plan ([0006](./decisions/0006-strangler-migration-from-cocli.md)).
-Awaiting maintainer review/ratification of proposed decisions 0005–0007.
+Decisions 0005–0007 ratified by the maintainer 2026-07-18.
 
 ## Provenance
 

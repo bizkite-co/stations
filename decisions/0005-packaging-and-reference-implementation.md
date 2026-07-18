@@ -1,5 +1,5 @@
 ---
-status: proposed
+status: ratified
 date: 2026-07-17
 ---
 
@@ -18,7 +18,12 @@ the implementation must not re-house the pattern under cocli.
 1. **This repo (`stations`) owns both the pattern and the reference implementation.**
    The on-disk contract lives in `spec/`; the Python package lives under
    `python/` (layout below). cocli, task-agent, and future apps are *external*
-   dependents — never the other way around.
+   dependents. The reverse dependency is prohibited in every form: `stations`
+   (spec or `python/`) MUST NOT import, vendor, or otherwise depend on code from
+   any consumer; no consumer-specific type, path template, or schema may appear
+   in `spec/` or `python/`; and no consumer repo may host the normative spec or
+   implementation (cocli's ADR-010–013 remain historical tellings, not
+   authorities).
 2. **Package name:** `stations` on PyPI (when published). Import path
    `stations.*`. Until first publish, consumers depend via path/git URL
    (`stations @ git+…` or a monorepo-external path).
@@ -38,7 +43,7 @@ the implementation must not re-house the pattern under cocli.
        ├── README.md
        └── src/stations/
            ├── __init__.py
-           ├── protocols.py           # typing.Protocol surfaces (land first)
+           ├── protocols.py           # typing.Protocol surfaces (step 1 below)
            ├── backends/              # PathBackend: local, s3
            ├── queue.py               # QueueEdge engines
            ├── log.py                 # LogEdge engines
@@ -47,7 +52,7 @@ the implementation must not re-house the pattern under cocli.
            └── inspect.py             # inspector CLI surface (later)
    ```
 
-4. **Land order (strangler-friendly):**
+4. **Implementation order (strangler-friendly):**
    1. `protocols.py` only — pure type surface, zero runtime deps beyond
       typing/pydantic. cocli may type-hint against it immediately.
    2. `backends/` local + S3 claim primitives (the actual IP).

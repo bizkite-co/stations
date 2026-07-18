@@ -214,14 +214,14 @@ lease lifecycle that CONCURRENCY §2 makes explicit.
 - **Cluster sync / rsync / gossip** — product transport, not the stations substrate.
 - **WASI runtime** — optional future enforcement of single-writer (decision 0007); not a
   Protocol dependency for v1.
-- **Schema migration engine** — deferred (decision 0003); when it lands it is itself a
-  `Transform` between versioned stations.
+- **Schema migration engine** — deferred (decision 0003); when it is implemented it is
+  itself a `Transform` between versioned stations.
 
-## 8. Landing path
+## 8. Implementation path
 
-1. Ship this document as the interface contract (now).
+1. This document is the interface contract (now).
 2. Reference package (`stations/python/`, decision 0005) starts with a pure
    `stations.protocols` module — Protocols only, no runtime — so cocli Phase 4/5
    services can type-hint against them without a full extraction.
-3. Runtime engines land behind the Protocols without changing the on-disk contract
-   (falsifiability test from METHOD.md step 8).
+3. Runtime engines are implemented behind the Protocols without changing the on-disk
+   contract (falsifiability test from METHOD.md step 8).

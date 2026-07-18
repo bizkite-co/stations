@@ -27,7 +27,7 @@ Proven once so far: `task-agent`'s `docs/STATION-MAP.md` (pending ratification).
 7. **Split gaps into tasks.** Each accepted gap becomes one task in that system's own
    queue. The mapping doc generates its own backlog; it does not fix anything itself.
 8. **State the falsifiability test.** What would prove this mapping wrong? (Usually: "when
-   the reference implementation lands, refactoring this system to use it should require no
+   the reference implementation exists, refactoring this system to use it should require no
    on-disk change — if it does, the map was wrong.")
 
 ## Anti-patterns to flag during mapping

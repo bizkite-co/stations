@@ -141,7 +141,7 @@ The layered write-back shape (an LSM tree over paths — cocli ADR-013):
 {index}/
 ├── datapackage.json
 ├── CURRENT                     # the commit pointer — the single atomic truth (§6.1)
-├── inbox/                      # L1: high-concurrency landing zone (a WAL, Shape B)
+├── inbox/                      # L1: high-concurrency write intake (a WAL, Shape B)
 │   └── {shard}/{record-id}.usv
 ├── shards/                     # L2: high-density folded base
 │   └── {shard}.usv
@@ -155,7 +155,7 @@ file; a large one uses inbox + shards. The contract is the same either way.
 
 A small JSON file naming the current committed generation of the index. It is the **only**
 file whose update constitutes a commit; everything else is either immutable once written
-(generation files) or an un-committed landing zone (inbox).
+(generation files) or an un-committed write intake (inbox).
 
 ```json
 {
