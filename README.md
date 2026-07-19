@@ -35,19 +35,25 @@ machine, and code is just what moves things between states.
 - **[decisions/](./decisions/)** — an append-only log of concept decisions (this repo eats
   its own dog food: decisions are a WAL, this README is a fold of it). Key decisions:
   emission edges (0001), cross-repo identity (0002), packaging (0005), strangler from
-  cocli (0006), disposition of overlapping WASI/protocol tasks (0007).
+  cocli (0006), disposition of overlapping WASI/protocol tasks (0007), Burr telemetry
+  + `@transform` ergonomics (0008).
 - **[consumers/](./consumers/)** — one thin onramp doc per system that adopts this
   vocabulary. Each onramp *links back* here rather than copying definitions — station
   membership is path-encoded and changes as records move, so identity beats path (see
   GLOSSARY.md § Cross-repo referencing).
+- **[python/](./python/)** — reference package: Protocols, `LocalPathBackend`,
+  `@transform` + `ApplicationBuilder`, and `stations inspect` (read-only). Engines
+  land later per [0006](./decisions/0006-strangler-migration-from-cocli.md).
 
 ## Status
 
-Pre-library. Pattern language + on-disk contract + Protocol surface are drafted; two
-systems (`cocli`, `task-agent`) dogfood the vocabulary. No runtime package extracted yet
-— packaging layout is decided (`python/`, [0005](./decisions/0005-packaging-and-reference-implementation.md));
-implementation follows the strangler plan ([0006](./decisions/0006-strangler-migration-from-cocli.md)).
-Decisions 0005–0007 ratified by the maintainer 2026-07-18.
+Pattern language + on-disk contract + Protocol surface are drafted; two systems
+(`cocli`, `task-agent`) dogfood the vocabulary. The Python package under `python/`
+ships Protocols, a minimal local backend, `@transform` ergonomics, and the read-only
+inspector ([0005](./decisions/0005-packaging-and-reference-implementation.md),
+[0008](./decisions/0008-burr-telemetry-and-transform-ergonomics.md)). Queue/log/index
+engines and S3 backend remain on the strangler plan
+([0006](./decisions/0006-strangler-migration-from-cocli.md)).
 
 ## Provenance
 

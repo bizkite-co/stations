@@ -4,9 +4,14 @@ Language-facing surface for the [stations](../) pattern language.
 
 ## Status
 
-**Phase 1 — Protocols only.** `stations.protocols` is a pure `typing.Protocol`
-surface transcribed from [`../spec/PROTOCOLS.md`](../spec/PROTOCOLS.md). No
-runtime engines yet (backends, queue, transform come later per decision 0005).
+- **Protocols** — pure `typing.Protocol` surface (`stations.protocols`).
+- **LocalPathBackend** — minimal filesystem `PathBackend` for inspect + later engines.
+- **`@transform` + ApplicationBuilder** — decorator ergonomics and assembly-time
+  graph validation (decision 0008 / Burr lesson).
+- **`stations inspect`** — read-only terminal inspector for conforming station roots.
+
+Engines (`TransformEngine`, `Compactor`) and S3 backend arrive in later strangler
+phases (decision 0005 / 0006).
 
 ## Install (consumers)
 
@@ -15,14 +20,43 @@ Until PyPI publish, depend by path or git:
 ```toml
 # pyproject.toml
 dependencies = [
-  "stations @ file:///absolute/path/to/stations/python",
+  "stations @ git+https://github.com/bizkite-co/stations.git#subdirectory=python",
 ]
 ```
 
-or:
+or for local hacking:
 
 ```bash
 uv add --editable /path/to/stations/python
+```
+
+## CLI
+
+```bash
+stations inspect /path/to/station-or-queues-root
+stations inspect --plain --no-leases ./queues/gm-list
+python -m stations inspect .
+```
+
+## Decorator
+
+```python
+from stations import StationDecl, transform, ApplicationBuilder
+
+pending = StationDecl("pending", "queues/x/pending", model=InModel)
+done = StationDecl("completed", "queues/x/completed", model=OutModel)
+
+@transform(from_station=pending, to_station=done)
+def promote(item: InModel) -> OutModel:
+    return OutModel(...)
+
+app = (
+    ApplicationBuilder()
+    .with_station(pending)
+    .with_station(done)
+    .with_transform(promote)
+    .build()
+)
 ```
 
 ## Layout
@@ -33,5 +67,15 @@ python/
 ├── README.md
 └── src/stations/
     ├── __init__.py
-    └── protocols.py    # only module in v0.1
+    ├── protocols.py
+    ├── station.py          # StationDecl
+    ├── transform.py        # @transform + ApplicationBuilder
+    ├── inspect.py          # read-only aggregation + render
+    ├── cli.py              # stations inspect
+    └── backends/
+        └── local.py        # LocalPathBackend
 ```
+
+## Normative docs (repo root)
+
+- `../GLOSSARY.md`, `../spec/*`, `../decisions/0005`, `../decisions/0008`

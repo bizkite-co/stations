@@ -1,7 +1,8 @@
 """Stations — typed file-path queue/WAL/index substrate (reference package).
 
-Phase 1 exposes :mod:`stations.protocols` only. Runtime engines land later;
-see decisions/0005 in the repo root.
+Exposes Protocols (Phase 1), a minimal LocalPathBackend, @transform +
+ApplicationBuilder, and a read-only inspector CLI. Engines
+(TransformEngine / Compactor) land in a later strangler phase.
 """
 
 from stations.protocols import (
@@ -18,8 +19,20 @@ from stations.protocols import (
     Transform,
     TransformEngine,
 )
+from stations.station import StationDecl
+from stations.transform import (
+    Application,
+    ApplicationBuilder,
+    GraphValidationError,
+    TransformRegistrationError,
+    TransformSpec,
+    get_transform,
+    registered_transforms,
+    transform,
+)
 
 __all__ = [
+    # protocols
     "Compactor",
     "Emission",
     "Fold",
@@ -32,6 +45,16 @@ __all__ = [
     "Station",
     "Transform",
     "TransformEngine",
+    # concrete / ergonomics
+    "StationDecl",
+    "Application",
+    "ApplicationBuilder",
+    "GraphValidationError",
+    "TransformRegistrationError",
+    "TransformSpec",
+    "get_transform",
+    "registered_transforms",
+    "transform",
 ]
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"

@@ -1,13 +1,14 @@
 [project]
 name = "stations"
-version = "0.1.0"
-description = "Reference implementation Protocols for typed file-path stations (queue/WAL/index)."
+version = "0.2.0"
+description = "Reference implementation for typed file-path stations (queue/WAL/index)."
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
 authors = [{ name = "Mark Stouffer" }]
 dependencies = [
     "typing-extensions>=4.0; python_version < '3.11'",
+    "rich>=13.0",
 ]
 
 [project.optional-dependencies]
@@ -15,6 +16,9 @@ dev = [
     "mypy>=1.0",
     "pytest>=7.0",
 ]
+
+[project.scripts]
+stations = "stations.cli:main"
 
 [build-system]
 requires = ["setuptools>=61"]

@@ -60,3 +60,10 @@ This consumer onramp is the stations-repo source of truth for *what extracts*.
 Protocol surface to target: [spec/PROTOCOLS.md](../spec/PROTOCOLS.md). Overlapping cocli
 tasks (build-protocols, WASI data access, WASI compaction) are disposed in
 [decisions/0007-disposition-overlapping-cocli-tasks.md](../decisions/0007-disposition-overlapping-cocli-tasks.md).
+
+**Inspector + `@transform` ergonomics** (decision
+[0008](../decisions/0008-burr-telemetry-and-transform-ergonomics.md)): cocli consumes
+via the pinned `stations` dependency. Thin adapter: `cocli stations inspect`
+(`cocli/commands/stations_cmd.py`) — resolves campaign queue paths and calls
+`stations.inspect` (read-only). Proof root: a live campaign queue such as
+`campaigns/<campaign>/queues/to-call` or `gm-list`.
