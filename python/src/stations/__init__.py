@@ -14,6 +14,9 @@ from stations.backends import (
     try_create_lease,
     try_reclaim_lease,
 )
+from stations.compactor import DefaultCompactor, last_write_wins_fold
+from stations.edges import PathIndexEdge, PathLogEdge, PathQueueEdge, SimpleLease
+from stations.engine import DefaultTransformEngine
 from stations.protocols import (
     Compactor,
     Emission,
@@ -62,6 +65,14 @@ __all__ = [
     "default_is_expired",
     "try_create_lease",
     "try_reclaim_lease",
+    # engines / edges
+    "DefaultTransformEngine",
+    "DefaultCompactor",
+    "last_write_wins_fold",
+    "PathQueueEdge",
+    "PathLogEdge",
+    "PathIndexEdge",
+    "SimpleLease",
     # concrete / ergonomics
     "StationDecl",
     "Application",
@@ -74,4 +85,4 @@ __all__ = [
     "transform",
 ]
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
