@@ -1,10 +1,19 @@
 """Stations — typed file-path queue/WAL/index substrate (reference package).
 
-Exposes Protocols (Phase 1), a minimal LocalPathBackend, @transform +
-ApplicationBuilder, and a read-only inspector CLI. Engines
-(TransformEngine / Compactor) land in a later strangler phase.
+Exposes Protocols, PathBackends (local + S3) with claim CAS helpers,
+@transform + ApplicationBuilder, and a read-only inspector CLI. Engines
+(TransformEngine / Compactor) arrive in a later strangler phase.
 """
 
+from stations.backends import (
+    LocalPathBackend,
+    S3PathBackend,
+    acquire_lease,
+    content_etag,
+    default_is_expired,
+    try_create_lease,
+    try_reclaim_lease,
+)
 from stations.protocols import (
     Compactor,
     Emission,
@@ -45,6 +54,14 @@ __all__ = [
     "Station",
     "Transform",
     "TransformEngine",
+    # backends / claim
+    "LocalPathBackend",
+    "S3PathBackend",
+    "acquire_lease",
+    "content_etag",
+    "default_is_expired",
+    "try_create_lease",
+    "try_reclaim_lease",
     # concrete / ergonomics
     "StationDecl",
     "Application",
@@ -57,4 +74,4 @@ __all__ = [
     "transform",
 ]
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"

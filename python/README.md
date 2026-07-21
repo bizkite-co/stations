@@ -5,13 +5,14 @@ Language-facing surface for the [stations](../) pattern language.
 ## Status
 
 - **Protocols** — pure `typing.Protocol` surface (`stations.protocols`).
-- **LocalPathBackend** — minimal filesystem `PathBackend` for inspect + later engines.
+- **LocalPathBackend + S3PathBackend** — PathBackend with claim CAS primitives
+  (`create_if_absent`, `replace_if_match`) and `stations.backends.claim` helpers
+  (decision 0006 Phase 2).
 - **`@transform` + ApplicationBuilder** — decorator ergonomics and assembly-time
   graph validation (decision 0008 / Burr lesson).
 - **`stations inspect`** — read-only terminal inspector for conforming station roots.
 
-Engines (`TransformEngine`, `Compactor`) and S3 backend arrive in later strangler
-phases (decision 0005 / 0006).
+Engines (`TransformEngine`, `Compactor`) arrive in strangler Phase 3 (decision 0006).
 
 ## Install (consumers)
 

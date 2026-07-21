@@ -1,7 +1,8 @@
-"""Local filesystem PathBackend (decision 0005 step 2, inspect-minimal subset).
+"""Local filesystem PathBackend with claim-grade CAS primitives (C1, P3).
 
-Implements the full PathBackend protocol so engines can use it later; the
-inspector only needs list / exists / read_bytes / mtime.
+create-if-absent: ``open(O_CREAT|O_EXCL)``.
+write_atomic / replace: tmp → fsync → rename on the same filesystem (P3).
+replace_if_match: read current bytes, compare etag, then atomic rename-over.
 """
 
 from __future__ import annotations
@@ -11,13 +12,15 @@ import tempfile
 from pathlib import Path
 from typing import Iterator, Optional
 
+from stations.backends.etag import content_etag
+
 
 class LocalPathBackend:
     """PathBackend over a local directory tree.
 
     Paths passed to methods are absolute or relative to ``root``. When
     ``root`` is set, relative paths are resolved under it; absolute paths
-    are used as-is (must still be under root when root is set, for safety).
+    must still resolve under root (safety).
     """
 
     def __init__(self, root: Optional[str | Path] = None) -> None:
@@ -46,6 +49,13 @@ class LocalPathBackend:
     def read_bytes(self, path: str) -> bytes:
         return self._resolve(path).read_bytes()
 
+    def etag(self, path: str) -> Optional[str]:
+        """Content etag (sha256) of the current file, or None if missing."""
+        target = self._resolve(path)
+        if not target.is_file():
+            return None
+        return content_etag(target.read_bytes())
+
     def write_atomic(self, path: str, data: bytes) -> None:
         target = self._resolve(path)
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -66,29 +76,23 @@ class LocalPathBackend:
             raise
 
     def list(self, prefix: str) -> Iterator[str]:
-        """Stream path strings under prefix (files and directories, relative to root).
-
-        Yields paths as posix strings. Directories end with ``/``. Streaming —
-        does not materialize the full tree.
-        """
-        base = self._resolve(prefix) if prefix not in ("", ".") else (
-            self.root if self.root is not None else Path(".")
+        """Stream path strings under prefix. Directories end with ``/``."""
+        base = (
+            self._resolve(prefix)
+            if prefix not in ("", ".")
+            else (self.root if self.root is not None else Path("."))
         )
         if not base.exists():
             return
         if base.is_file():
             yield self._rel(base)
             return
-        # os.walk is generator-based; we yield one path at a time
         for dirpath, dirnames, filenames in os.walk(base, topdown=True):
             dpath = Path(dirpath)
-            # yield directory entries under prefix (skip the root itself when empty walk)
             for name in sorted(dirnames):
-                child = dpath / name
-                yield self._rel(child) + "/"
+                yield self._rel(dpath / name) + "/"
             for name in sorted(filenames):
-                child = dpath / name
-                yield self._rel(child)
+                yield self._rel(dpath / name)
 
     def delete(self, path: str) -> None:
         target = self._resolve(path)
@@ -98,6 +102,7 @@ class LocalPathBackend:
             target.unlink()
 
     def create_if_absent(self, path: str, data: bytes) -> bool:
+        """Test-and-set via O_CREAT|O_EXCL (CONCURRENCY §1). True on create."""
         target = self._resolve(path)
         target.parent.mkdir(parents=True, exist_ok=True)
         flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY
@@ -121,12 +126,20 @@ class LocalPathBackend:
     def replace_if_match(
         self, path: str, data: bytes, *, etag: Optional[str]
     ) -> bool:
-        """Local CAS: etag is ignored for v0 local (always replace if exists or create).
+        """CAS replace: succeed only if current content etag matches (C1, C3).
 
-        True always after atomic write. Full mtime/inode etag matching is a
-        later refinement; local rename-over is already atomic.
+        Uses content sha256 as the etag. Atomic rename-over after the check.
+        Missing path → False (use create_if_absent to create).
+        ``etag=None`` is treated as unconditional replace of an existing file
+        (still fails if missing).
         """
-        del etag  # reserved for S3 / future local etag
+        target = self._resolve(path)
+        if not target.is_file():
+            return False
+        if etag is not None:
+            current = target.read_bytes()
+            if content_etag(current) != etag:
+                return False
         self.write_atomic(path, data)
         return True
 

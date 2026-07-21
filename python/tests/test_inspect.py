@@ -110,6 +110,18 @@ def test_local_backend_create_if_absent(tmp_path: Path) -> None:
     assert backend.read_bytes("cell.json") == b"one"
 
 
+def test_local_backend_replace_if_match_requires_etag(tmp_path: Path) -> None:
+    from stations.backends.etag import content_etag
+
+    backend = LocalPathBackend(tmp_path)
+    assert backend.create_if_absent("cell.json", b"one") is True
+    assert backend.replace_if_match("cell.json", b"two", etag="wrong") is False
+    assert backend.replace_if_match(
+        "cell.json", b"two", etag=content_etag(b"one")
+    ) is True
+    assert backend.read_bytes("cell.json") == b"two"
+
+
 def test_leases_not_counted_as_items(tmp_path: Path) -> None:
     root = tmp_path / "q"
     _write(root / "pending" / "x.json", "{}")
