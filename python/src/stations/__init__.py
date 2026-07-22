@@ -17,6 +17,16 @@ from stations.backends import (
 from stations.compactor import DefaultCompactor, last_write_wins_fold
 from stations.edges import PathIndexEdge, PathLogEdge, PathQueueEdge, SimpleLease
 from stations.engine import DefaultTransformEngine
+from stations.schema import (
+    SCHEMA_FILENAME,
+    SchemaHoldingRuleError,
+    SchemaWriteError,
+    check_holding_rule,
+    is_schema_protected,
+    protect_schema_sidecar,
+    read_schema_sidecar,
+    write_schema_sidecar,
+)
 from stations.protocols import (
     Compactor,
     Emission,
@@ -73,6 +83,15 @@ __all__ = [
     "PathLogEdge",
     "PathIndexEdge",
     "SimpleLease",
+    # schema sidecars
+    "SCHEMA_FILENAME",
+    "SchemaHoldingRuleError",
+    "SchemaWriteError",
+    "check_holding_rule",
+    "is_schema_protected",
+    "protect_schema_sidecar",
+    "read_schema_sidecar",
+    "write_schema_sidecar",
     # concrete / ergonomics
     "StationDecl",
     "Application",
@@ -85,4 +104,4 @@ __all__ = [
     "transform",
 ]
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"

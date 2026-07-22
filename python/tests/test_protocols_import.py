@@ -7,7 +7,7 @@ from stations import protocols
 
 
 def test_package_version() -> None:
-    assert stations.__version__ == "0.4.0"
+    assert stations.__version__ == "0.5.0"
 
 
 def test_protocol_names_exported() -> None:
