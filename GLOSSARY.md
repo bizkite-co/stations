@@ -17,7 +17,9 @@ noun: `pending/`, `completed/2026/`, `campaigns/{campaign}/discovery-gen/pending
 A pure, immutable, strongly typed function that converts an object in one station into an
 object of another type in another station. Directories are states; transforms are the
 typed edges between them. A transform never partially rewrites a record it isn't moving —
-each move is a whole-record typed operation, not a patch.
+each move is a whole-record typed operation, not a patch. **Not a ban on concurrent
+field-level updates:** those are append-only *field-update log records* folded into a
+whole present state — see [decisions/0009-field-update-records-as-log-facts.md](./decisions/0009-field-update-records-as-log-facts.md).
 
 ## Edge role
 

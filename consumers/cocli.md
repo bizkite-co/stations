@@ -61,6 +61,14 @@ Protocol surface to target: [spec/PROTOCOLS.md](../spec/PROTOCOLS.md). Overlappi
 tasks (build-protocols, WASI data access, WASI compaction) are disposed in
 [decisions/0007-disposition-overlapping-cocli-tasks.md](../decisions/0007-disposition-overlapping-cocli-tasks.md).
 
+**Entity field journal (patches as log facts):** Concurrent field updates (e.g. one
+writer sets company `phone`, another sets `address`) are stations-shaped when encoded as
+append-only field-update records — [decision 0009](../decisions/0009-field-update-records-as-log-facts.md).
+cocli's product instance is `cocli/core/wal.py` + `DatagramRecord` (central journal under
+`paths.wal`); fold into entity state is still product-side until the LogEdge + Compactor
+cutover task lands. Campaign index WALs (prospects, emails) are a separate whole-row log
+path already under the strangler.
+
 **Inspector + `@transform` ergonomics** (decision
 [0008](../decisions/0008-burr-telemetry-and-transform-ergonomics.md)): cocli consumes
 via the pinned `stations` dependency. Thin adapter: `cocli stations inspect`
