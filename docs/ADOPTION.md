@@ -22,6 +22,9 @@ Secondary framings, for different audiences:
   where the coordination state is plain files a human can read."
 - For platform skeptics: "everything Kafka-shaped assumes you'll run a
   server. This assumes you won't."
+- For Industry-4.0 / UNS people: "a broker-free, durable Unified
+  Namespace — the UNS you can `ls`, and that survives the broker being
+  off."
 
 ## The honest landscape (who is adjacent, and what's actually different)
 
@@ -32,6 +35,7 @@ Secondary framings, for different audiences:
 | Orchestrators w/ assets | Dagster, Prefect, Airflow | A scheduler process; assets as metadata about elsewhere-stored data | No scheduler; the asset's location *is* its state |
 | App-level state machines | Apache Burr, XState | In-memory state blob per app instance, pluggable opaque persisters | Multi-worker by construction; storage layout is the state machine (Burr comparison already recorded in decision 0008) |
 | File/embedded queues | maildir, persist-queue, litequeue, huey | Single machine, single language, no spec | Written language-portable contract; S3 + POSIX; typed models per path |
+| Industrial UNS | MQTT + Sparkplug B; HiveMQ, HighByte, Litmus, iiot.university | A broker holds the namespace; current state = retained messages in broker memory | Same path-as-identity thesis, but durable at rest: all three trichotomy roles (queue/WAL/index), no broker to keep alive, history intrinsic rather than a bolted-on historian |
 | Table formats | Delta Lake, Iceberg | Analytics-scale tables, heavy ecosystem | Same manifest/compaction ideas at ops scale, human-readable, zero infra |
 
 The differentiated bundle — no one adjacent has all four: **(1)** written
@@ -56,7 +60,20 @@ inspector for free because state is already files.
 4. **Local-first / plain-text-ecosystem developers** — people who already
    believe files are the durable substrate and want coordination without
    abandoning that belief.
-5. **Other-language implementers** — people who would never adopt the
+5. **Industrial UNS / Industry-4.0 practitioners** — a segment unlike the
+   others because it is **pre-sold on the thesis**: the UNS movement
+   (Walker Reynolds / iiot.university; HiveMQ, HighByte, Litmus) has spent
+   years evangelizing hierarchical-namespace-as-single-source-of-truth,
+   with courses, conferences, and consultants. The teaching is done; only
+   the mechanism differs (broker + retained messages vs files at rest —
+   see LINEAGE.md, topic hierarchies). Honest friction: that community
+   *expects* real-time pub/sub, and rename-and-CAS is not
+   report-by-exception millisecond delivery. The wedge is therefore not
+   "replace your broker" but (a) the durable, inspectable substrate
+   *under* the namespace — intrinsic WAL where they bolt on historians —
+   and (b) UNS for edges that can't or won't run a broker, which loops
+   back into segment #2.
+6. **Other-language implementers** — people who would never adopt the
    Python library but might implement the *spec* (see maildir precedent
    below). Smallest group, highest leverage per person.
 
@@ -113,6 +130,11 @@ Do this before spending on content. The goal of the first phase is
    - **Burr persister backend** implemented over stations — turns the
      comparison in decision 0008 into a collaboration instead of a rivalry.
    - **Dagster asset-observation** hook (their observability, our storage).
+   - **MQTT/UNS bridge** — publish each index station's `CURRENT` values
+     into a UNS topic tree (station path → ISA-95-style topic), and/or
+     ingest a UNS subscription into a station WAL. Cheap in both
+     directions because the namespaces are already isomorphic; turns the
+     historian bolt-on problem into "point it at the WAL."
 6. **Conference-talk shape** (later): "The filesystem is a state machine"
    — the LINEAGE.md material (statio/status, Petri nets, maildir) is the
    talk skeleton.
@@ -131,6 +153,32 @@ Realistic postures, from least to most entangled:
 - **Donation/merger into a larger project** — premature and probably
   wrong: the spec-first identity is the differentiator, and it would be
   the first thing a larger host project would compromise.
+
+## Speculative interop surfaces (recorded, not planned)
+
+Explicitly speculative — none of this is roadmap. Recorded because the
+adjacencies keep compounding, which itself is evidence of hidden value:
+the pattern seems to sit at an interop nexus, plausibly because "typed
+files at rest" is the lowest common denominator that *every* adjacent
+system — brokers, orchestrators, agents, historians, SQL engines — can
+already touch without adopting anything.
+
+- **LLM-driven UNS transforms (Burr × UNS × stations).** The industrial
+  UNS gives an agent a semantically organized, real-time picture of an
+  operation; Burr-style agentic loops give it decision structure; what
+  neither provides is a durable, auditable, resumable substrate for the
+  agent's *actions*. Stations is that missing third leg: the agent reads
+  namespace present-state (index stations / the MQTT bridge above),
+  proposes typed transforms, and every action lands as a WAL fact a human
+  can `ls` and audit after the fact. The Burr-persister and MQTT-bridge
+  adapters (§5 above) are each modest alone; *composed*, they describe an
+  auditable industrial-agent architecture that none of the three
+  communities currently has a name for.
+- **The general pattern behind that example:** any pairing of (a
+  live/semantic view of the world) with (an agent that acts on it) needs
+  (a durable, inspectable action substrate) — and stations keeps showing
+  up as the third leg regardless of what fills the first two slots. Worth
+  watching for more instances rather than engineering toward any one.
 
 ## Business posture (so it's written down)
 

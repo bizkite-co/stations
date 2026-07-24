@@ -106,7 +106,23 @@ keeps the design honest about purity and composition.
   look like paths and route by prefix. The resemblance is real but shallow:
   topics route messages in flight; stations hold records at rest. The
   difference is durability-first vs delivery-first, and it is why stations
-  needs no broker.
+  needs no broker. The industrial incarnation of this pattern is the
+  **Unified Namespace (UNS)** of Industry 4.0 (Walker Reynolds /
+  iiot.university; implementations from HiveMQ, HighByte, Litmus): all
+  plant-floor systems publish state into one hierarchical namespace,
+  typically an ISA-95 tree (`enterprise/site/area/line/cell`), declared the
+  single source of truth. UNS independently arrived at the path-as-model
+  thesis — the topic path *is* identity plus semantic location — but by the
+  mirror-image mechanism: a broker at the hub, with "current state" held as
+  MQTT retained messages (or Sparkplug B's birth/death session state — whose
+  device-oriented namespace is itself in tension with ISA-95 semantics, a
+  live debate in that community). In trichotomy terms, UNS is the
+  **index/present corner delivered by transport instead of storage**: a
+  retained message at a topic is a `CURRENT` value at a path. What it lacks
+  are the other two corners — nothing is ever *claimed* (pub/sub, no queue
+  role), and history is a bolted-on "historian" database rather than an
+  intrinsic WAL. Stations is structurally a superset: all three roles,
+  durable at rest, no broker to keep alive.
 - **LSM trees / write-ahead logs** — the queue/WAL/index trichotomy
   (future/past/present) borrows its compaction vocabulary (leveling,
   tombstones, watermarks, `CURRENT` pointer) from LevelDB/RocksDB — prior
