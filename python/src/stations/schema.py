@@ -12,23 +12,16 @@ from __future__ import annotations
 
 import json
 import logging
-import os
-import stat
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Sequence, Union
 
 from stations.backends.local import LocalPathBackend
+from stations.protect import is_protected, protect_path, unprotect_for_write
 from stations.protocols import PathBackend
 
 logger = logging.getLogger(__name__)
 
 SCHEMA_FILENAME = "datapackage.json"
-
-# Mode after successful write: owner/group/other read-only (CONCURRENCY §5 note).
-# Re-writes chmod u+w first, then restore.
-_PROTECTED_MODE = 0o444
-_WRITABLE_MODE = 0o644
-
 
 class SchemaWriteError(ValueError):
     """Invalid or non-conforming schema sidecar write."""
@@ -155,11 +148,7 @@ def write_schema_sidecar(
     payload = json.dumps(dict(document), indent=2, sort_keys=False).encode("utf-8")
     # Ensure we can overwrite a protected sidecar
     local_file = abs_dir / file_name
-    if local_file.exists():
-        try:
-            os.chmod(local_file, _WRITABLE_MODE)
-        except OSError:
-            pass
+    unprotect_for_write(local_file)
 
     # Prefer create-if-absent only when missing; otherwise atomic replace
     if not backend.exists(path_for_backend):
@@ -170,30 +159,24 @@ def write_schema_sidecar(
         backend.write_atomic(path_for_backend, payload)
 
     if protect:
-        protect_schema_sidecar(local_file)
+        protect_path(local_file)
 
     logger.debug("wrote schema sidecar %s", path_for_backend)
     return path_for_backend
 
 
 def protect_schema_sidecar(path: Union[str, Path]) -> None:
-    """POSIX: make schema sidecar read-only (CONCURRENCY §5 mechanical note)."""
-    p = Path(path)
-    if not p.exists():
-        return
-    try:
-        os.chmod(p, _PROTECTED_MODE)
-    except OSError as exc:
-        logger.warning("could not protect schema sidecar %s: %s", p, exc)
+    """Alias of :func:`stations.protect.protect_path` for datapackage.json.
+
+    Prefer :func:`stations.protect.protect_path` for non-schema ratified files
+    (checkpoints, CURRENT, index USVs).
+    """
+    protect_path(path)
 
 
 def is_schema_protected(path: Union[str, Path]) -> bool:
-    """True if the file exists and has no write bits for owner/group/other."""
-    p = Path(path)
-    if not p.exists():
-        return False
-    mode = p.stat().st_mode
-    return not bool(mode & (stat.S_IWUSR | stat.S_IWGRP | stat.S_IWOTH))
+    """Alias of :func:`stations.protect.is_protected` (datapackage naming)."""
+    return is_protected(path)
 
 
 def read_schema_sidecar(

@@ -17,6 +17,13 @@ from stations.backends import (
 from stations.compactor import DefaultCompactor, last_write_wins_fold
 from stations.edges import PathIndexEdge, PathLogEdge, PathQueueEdge, SimpleLease
 from stations.engine import DefaultTransformEngine
+from stations.protect import (
+    PROTECTED_MODE,
+    WRITABLE_MODE,
+    is_protected,
+    protect_path,
+    unprotect_for_write,
+)
 from stations.schema import (
     SCHEMA_FILENAME,
     SchemaHoldingRuleError,
@@ -83,6 +90,12 @@ __all__ = [
     "PathLogEdge",
     "PathIndexEdge",
     "SimpleLease",
+    # ratified-artifact POSIX protect (CONCURRENCY §5)
+    "PROTECTED_MODE",
+    "WRITABLE_MODE",
+    "is_protected",
+    "protect_path",
+    "unprotect_for_write",
     # schema sidecars
     "SCHEMA_FILENAME",
     "SchemaHoldingRuleError",

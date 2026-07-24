@@ -198,6 +198,11 @@ class DefaultCompactor:
                     pass
                 return False
 
+        # Mechanical protect on local ratified artifacts (CONCURRENCY §5);
+        # not a distributed lock — S3/CAS remains the multi-node gate.
+        _protect_local_if_possible(backend, checkpoint_path)
+        _protect_local_if_possible(backend, current_path)
+
         # 5. Delete folded sources (consuming mode only; C9, C13)
         if self.consuming:
             for path in source_paths:
@@ -227,6 +232,24 @@ class DefaultCompactor:
                     backend.delete(path)
                 except Exception:
                     pass
+
+
+def _protect_local_if_possible(backend: Any, path: str) -> None:
+    """Best-effort POSIX protect when backend can resolve a local file path."""
+    try:
+        from stations.protect import protect_path
+
+        resolve = getattr(backend, "_resolve", None)
+        if callable(resolve):
+            protect_path(resolve(path))
+            return
+        from pathlib import Path
+
+        p = Path(path)
+        if p.is_absolute() and p.exists():
+            protect_path(p)
+    except Exception as exc:
+        logger.debug("protect skipped for %s: %s", path, exc)
 
 
 def _past_watermark(name: str, path: str, watermark: Optional[object]) -> bool:
