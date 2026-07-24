@@ -98,6 +98,10 @@ keeps the design honest about purity and composition.
   (URIs as typed nouns); Hive partitioning rediscovered it for data lakes
   (path segments as typed columns). Stations sits squarely in this lineage:
   the filesystem is not where state is *recorded* — it is where state *is*.
+  Decision 0010 extends the projection to a fourth medium: a consumer's
+  module tree can mirror its station tree, making the code namespace the
+  *type-level* shadow of the data tree (static roots and segment types in
+  code; segment values — shard `07`, day `23` — only in storage).
 - **Topic hierarchies** (MQTT, message-bus subject trees) — namespaces that
   look like paths and route by prefix. The resemblance is real but shallow:
   topics route messages in flight; stations hold records at rest. The
@@ -132,6 +136,56 @@ Every alternative loses something the word "station" keeps:
 place on a path, where records stand — *stare* — until a transform moves
 them on.
 
+## The biology of the pattern
+
+A growing plant is the clearest teaching image the project has, because it
+shows *two distinct regularities* at once — and separating them is what
+makes the combinator idea (decision 0010) precise rather than merely
+pretty.
+
+- **Fractal branching — the self-similar part.** A twig forks the way the
+  branch forked, which forked the way the trunk forked; the shape recurs at
+  every scale. This is the Aristotelian microcosm sense, the part that "goes
+  back to the whole in miniature." In stations it is **composition**: a
+  station's output is another station's input, subgraphs nest, and the graph
+  looks the same at every zoom level. It is free and structural — you get it
+  from the model-to-model discipline without building anything.
+
+- **Terminal convergence — the conserved-organ part.** However different the
+  branches, the *leaves and flowers converge*: a small set of genetically
+  fixed organ templates, instantiated over and over. Biologists call this
+  serial homology; it is not self-similarity but almost its opposite —
+  divergence in the connective topology, convergence at the functional ends.
+  In stations this is the **shared segment library**: `phases`,
+  `shard_by_hash`, `partition_by_day_of_month` are the leaves — built once,
+  well tested once, terminated into by every branch. A leaf is not a smaller
+  copy of the tree; it is a reused module the branch merely ends in.
+
+Two consequences fall out of the second regularity, and they are the
+load-bearing ones:
+
+1. **The metaphor undersells the design.** In botany each species grows its
+   own flower — a rose and an apple share no petals. Stations proposes the
+   stronger thing: *one flower across all species*, the identical organ set
+   shared by cocli, task-agent, and every future consumer. A universal organ
+   set is a bolder claim than any single plant makes, and it is the whole
+   point of extracting the combinators into the library rather than
+   re-growing them per consumer.
+
+2. **Test investment follows reuse down the same gradient.** The organs are
+   few, shared, and stable, so they are tested exhaustively — once — and
+   every branch inherits that trust. Branches then need only their *wiring*
+   tested (does this model route to that station), not their organs. This is
+   the mechanism by which growing the graph stays cheap: the marginal cost of
+   a new branch queue falls toward "wire up organs you already trust." "Well
+   tested leaf and flower models" is therefore not an ornament on the idea —
+   it is how the idea pays off.
+
+The healthy ratio is **few leaves, many branches** — a plant has a handful
+of organ types and unbounded branch variety. A proliferation of one-off leaf
+types would be the smell, which is exactly why decision 0010 keeps the
+combinator set closed and small.
+
 ## Open threads worth traversing later
 
 - Petri-net formalization of CONCURRENCY.md's invariants (C1–C14) —
@@ -142,3 +196,10 @@ them on.
   retired.
 - A comparative note on maildir's NFS-safety arguments vs this spec's S3
   conditional-PUT arguments — same shape of reasoning, thirty years apart.
+- Segment combinators (decision 0010): phase dirs, shards, and date
+  partitions implemented once as declared, importable segment types —
+  maildir's `tmp/new/cur`, task-agent's four phases, and day-of-month
+  inbox sharding are all hand-rolled instances of the same four
+  combinators. If the spec's layouts become derivable from combinator
+  contracts, that may be the largest single payoff of the model-as-path
+  idiom.
