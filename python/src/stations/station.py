@@ -9,14 +9,19 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from string import Formatter
-from typing import Any, Generic, Optional, Type, TypeVar
+from typing import Any, Generic, Optional, Sequence, Tuple, Type, TypeVar
 
 T = TypeVar("T")
 
 
 @dataclass(frozen=True)
 class StationDecl(Generic[T]):
-    """Typed path binding: path template + model + schema version + codec."""
+    """Typed path binding: path template + model + schema version + codec.
+
+    ``segments`` holds decision-0010 combinators declared at construction time
+    (e.g. ``phases(...)``, ``shard_by_hash(n)``). Segment *values* remain
+    runtime-only on disk.
+    """
 
     name: str
     path_template: str
@@ -24,6 +29,7 @@ class StationDecl(Generic[T]):
     schema_version: str = "1"
     serialization: str = "json-file"  # "usv" | "json-file" | "md-frontmatter"
     datapackage_path: Optional[str] = None
+    segments: Tuple[Any, ...] = ()
 
     def resolve(self, **params: str) -> str:
         """Render path_template with parameters into a backend path/prefix."""
@@ -44,6 +50,9 @@ class StationDecl(Generic[T]):
             raise ValueError(
                 f"station {self.name!r}: serialization='usv' requires datapackage_path (P1)"
             )
+        # Normalize segments to tuple (allow list at call site)
+        if self.segments is not None and not isinstance(self.segments, tuple):
+            object.__setattr__(self, "segments", tuple(self.segments))
 
 
 # Alias used in decorator signatures / docs

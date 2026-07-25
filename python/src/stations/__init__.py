@@ -48,6 +48,18 @@ from stations.protocols import (
     Transform,
     TransformEngine,
 )
+from stations.segments import (
+    PartitionByDayOfMonth,
+    Phases,
+    ShardByHash,
+    ShardByPrefix,
+    collect_phases,
+    collect_shard,
+    partition_by_day_of_month,
+    phases,
+    shard_by_hash,
+    shard_by_prefix,
+)
 from stations.station import StationDecl
 from stations.transform import (
     Application,
@@ -105,6 +117,17 @@ __all__ = [
     "protect_schema_sidecar",
     "read_schema_sidecar",
     "write_schema_sidecar",
+    # segment combinators (0010)
+    "Phases",
+    "ShardByHash",
+    "ShardByPrefix",
+    "PartitionByDayOfMonth",
+    "phases",
+    "shard_by_hash",
+    "shard_by_prefix",
+    "partition_by_day_of_month",
+    "collect_phases",
+    "collect_shard",
     # concrete / ergonomics
     "StationDecl",
     "Application",
@@ -117,4 +140,4 @@ __all__ = [
     "transform",
 ]
 
-__version__ = "0.5.0"
+__version__ = "0.5.2"
