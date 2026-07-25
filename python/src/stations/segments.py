@@ -33,7 +33,23 @@ from __future__ import annotations
 import hashlib
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
-from typing import Iterable, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Iterable, Optional, Sequence, Tuple, Union
+
+
+@dataclass(frozen=True)
+class PhaseRef:
+    """Declaration-scoped phase token — not a free-floating magic string.
+
+    Bound to the ``Phases`` instance that created it (by identity). Path helpers
+    and engines should take ``PhaseRef`` (or resolve via ``Phases.ref`` /
+    ``Phases.require``) so call sites do not invent phase spellings.
+    """
+
+    name: str
+    _owner_id: int  # id(Phases) — avoid cross-station token mix-ups
+
+    def __str__(self) -> str:
+        return self.name
 
 
 @dataclass(frozen=True)
@@ -41,7 +57,11 @@ class Phases:
     """Named phase directories for a station (queue states, maildir, tasks, …).
 
     Phase *names* are fixed at declaration; which directories exist on disk is a
-    runtime value question.
+    runtime value question. Access tokens via attribute or mapping::
+
+        ph = phases("pending", "completed")
+        ph.pending          # PhaseRef
+        ph["completed"]     # PhaseRef
     """
 
     names: Tuple[str, ...]
@@ -54,20 +74,63 @@ class Phases:
         for n in self.names:
             if not n or "/" in n or n in (".", ".."):
                 raise ValueError(f"invalid phase name: {n!r}")
+        # Safe Python identifiers become attributes (pending, completed, …)
+        refs: Dict[str, PhaseRef] = {
+            n: PhaseRef(name=n, _owner_id=id(self)) for n in self.names
+        }
+        object.__setattr__(self, "_refs", refs)
 
-    def is_phase(self, name: str) -> bool:
-        return name in self.names
+    @property
+    def refs(self) -> Dict[str, PhaseRef]:
+        return getattr(self, "_refs")  # type: ignore[no-any-return]
 
-    def require(self, name: str) -> str:
-        if name not in self.names:
+    def __getattr__(self, name: str) -> PhaseRef:
+        if name.startswith("_"):
+            raise AttributeError(name)
+        try:
+            refs: Dict[str, PhaseRef] = object.__getattribute__(self, "_refs")
+        except AttributeError as exc:
+            raise AttributeError(name) from exc
+        if name in refs:
+            return refs[name]
+        raise AttributeError(
+            f"{type(self).__name__!r} object has no phase {name!r}; "
+            f"declared {self.names!r}"
+        )
+
+    def __getitem__(self, name: str) -> PhaseRef:
+        return self.ref(name)
+
+    def ref(self, name: str) -> PhaseRef:
+        """Return the PhaseRef for a declared name (or raise)."""
+        try:
+            refs: Dict[str, PhaseRef] = object.__getattribute__(self, "_refs")
+        except AttributeError as exc:
+            raise ValueError("Phases not initialized") from exc
+        if name not in refs:
             raise ValueError(
                 f"phase {name!r} not in declared phases {self.names!r}"
             )
-        return name
+        return refs[name]
 
-    def path_suffix(self, name: str) -> str:
+    def is_phase(self, phase: Union[str, PhaseRef]) -> bool:
+        name = phase.name if isinstance(phase, PhaseRef) else phase
+        return name in self.names
+
+    def require(self, phase: Union[str, PhaseRef]) -> PhaseRef:
+        """Validate and return a PhaseRef belonging to this Phases instance."""
+        if isinstance(phase, PhaseRef):
+            if phase._owner_id != id(self) or phase.name not in self.names:
+                raise ValueError(
+                    f"PhaseRef {phase.name!r} is not owned by this Phases "
+                    f"(declared {self.names!r})"
+                )
+            return phase
+        return self.ref(phase)
+
+    def path_suffix(self, phase: Union[str, PhaseRef]) -> str:
         """Relative segment ``{phase}/`` for a declared phase."""
-        return f"{self.require(name)}/"
+        return f"{self.require(phase).name}/"
 
 
 def phases(*names: str) -> Phases:
