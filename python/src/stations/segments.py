@@ -196,10 +196,14 @@ def shard_by_prefix(k: int, *, lower: bool = True) -> ShardByPrefix:
 class ShardByCharIndex:
     """Route by a single character at a fixed index (e.g. Place ID 6th char).
 
-    Matches cocli historical ``get_place_id_shard`` when ``index=5``:
-    - empty → ``fallback``
-    - ``len < index+1`` → last character (even if non-alnum for short keys)
-    - otherwise character at ``index`` if alnum else ``fallback``
+    Place IDs use a base64-like alphabet that includes ``-`` and ``_``.
+    Those are distinct identity characters and must appear as path segments
+    unchanged — never "slugified" into the fallback. Only missing/short keys
+    use ``fallback``.
+
+    Matches production cocli ``get_place_id_shard`` when ``index=5``:
+    - empty or ``len < index+1`` → ``fallback`` (typically ``_``)
+    - otherwise the character at ``index`` **as-is** (alnum, ``-``, ``_``, …)
     """
 
     index: int = 5
@@ -215,11 +219,10 @@ class ShardByCharIndex:
             if base.endswith(ext):
                 base = base[: -len(ext)]
                 break
-        # Match cocli get_place_id_shard: short keys → fallback (not last char)
+        # Short / empty only — do not collapse non-alnum place_id chars.
         if not base or len(base) < self.index + 1:
             return self.fallback
-        char = base[self.index]
-        return char if char.isalnum() else self.fallback
+        return base[self.index]
 
     def path_suffix(self, key: str) -> str:
         return f"{self.shard_for(key)}/"

@@ -51,11 +51,15 @@ def test_shard_by_prefix() -> None:
 
 
 def test_shard_by_char_index_place_id_sixth() -> None:
-    """Matches cocli get_place_id_shard (index 5)."""
+    """Matches cocli get_place_id_shard (index 5): raw alphabet, no slugify."""
     s = shard_by_char_index(5)
     assert s.shard_for("ChIJ-5-rest") == "5"
     assert s.shard_for("ChIJ-5-rest.usv") == "5"
     assert s.shard_for("ab") == "_"  # short → fallback
+    # Google Place IDs are base64-like: '-' and '_' are distinct path identity
+    assert s.shard_for("ChIJ--Cy9B3Jw4kR9h1ar_qcBTg") == "-"
+    assert s.shard_for("ChIJg_FAeU6P3YgRdYX05J1RuZw") == "_"
+    assert s.shard_for("ChIJ--Cy.usv") == "-"
 
 
 def test_partition_day_of_month_and_ttl() -> None:
