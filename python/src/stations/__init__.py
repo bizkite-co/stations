@@ -59,12 +59,14 @@ from stations.segments import (
     PartitionByDayOfMonth,
     PhaseRef,
     Phases,
+    ShardByCharIndex,
     ShardByHash,
     ShardByPrefix,
     collect_phases,
     collect_shard,
     partition_by_day_of_month,
     phases,
+    shard_by_char_index,
     shard_by_hash,
     shard_by_prefix,
 )
@@ -130,10 +132,12 @@ __all__ = [
     "Phases",
     "ShardByHash",
     "ShardByPrefix",
+    "ShardByCharIndex",
     "PartitionByDayOfMonth",
     "phases",
     "shard_by_hash",
     "shard_by_prefix",
+    "shard_by_char_index",
     "partition_by_day_of_month",
     "collect_phases",
     "collect_shard",
@@ -155,4 +159,4 @@ __all__ = [
     "transform",
 ]
 
-__version__ = "0.5.3"
+__version__ = "0.5.4"

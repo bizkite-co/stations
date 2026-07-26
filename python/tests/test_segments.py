@@ -9,6 +9,7 @@ import pytest
 from stations.segments import (
     phases,
     partition_by_day_of_month,
+    shard_by_char_index,
     shard_by_hash,
     shard_by_prefix,
 )
@@ -47,6 +48,14 @@ def test_shard_by_prefix() -> None:
     s = shard_by_prefix(2)
     assert s.shard_for("ChIJHello") == "ch"
     assert s.path_suffix("AB") == "ab/"
+
+
+def test_shard_by_char_index_place_id_sixth() -> None:
+    """Matches cocli get_place_id_shard (index 5)."""
+    s = shard_by_char_index(5)
+    assert s.shard_for("ChIJ-5-rest") == "5"
+    assert s.shard_for("ChIJ-5-rest.usv") == "5"
+    assert s.shard_for("ab") == "b"  # short: last char
 
 
 def test_partition_day_of_month_and_ttl() -> None:

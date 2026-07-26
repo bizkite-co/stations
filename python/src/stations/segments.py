@@ -193,6 +193,45 @@ def shard_by_prefix(k: int, *, lower: bool = True) -> ShardByPrefix:
 
 
 @dataclass(frozen=True)
+class ShardByCharIndex:
+    """Route by a single character at a fixed index (e.g. Place ID 6th char).
+
+    Matches cocli historical ``get_place_id_shard`` when ``index=5``:
+    - empty → ``fallback``
+    - ``len < index+1`` → last character (even if non-alnum for short keys)
+    - otherwise character at ``index`` if alnum else ``fallback``
+    """
+
+    index: int = 5
+    fallback: str = "_"
+
+    def __post_init__(self) -> None:
+        if self.index < 0 or self.index > 256:
+            raise ValueError(f"shard_by_char_index index out of range: {self.index}")
+
+    def shard_for(self, key: str) -> str:
+        base = key.replace("\\", "/").split("/")[-1]
+        for ext in (".usv", ".csv", ".json"):
+            if base.endswith(ext):
+                base = base[: -len(ext)]
+                break
+        if not base:
+            return self.fallback
+        if len(base) < self.index + 1:
+            return base[-1]
+        char = base[self.index]
+        return char if char.isalnum() else self.fallback
+
+    def path_suffix(self, key: str) -> str:
+        return f"{self.shard_for(key)}/"
+
+
+def shard_by_char_index(index: int = 5, *, fallback: str = "_") -> ShardByCharIndex:
+    """Declare fixed-index character sharding (declaration-time)."""
+    return ShardByCharIndex(index=index, fallback=fallback)
+
+
+@dataclass(frozen=True)
 class PartitionByDayOfMonth:
     """Day-of-month partition (01–31) with optional TTL for GC/watermark.
 
@@ -261,7 +300,13 @@ def partition_by_day_of_month(*, ttl_days: int = 7) -> PartitionByDayOfMonth:
 
 
 # Type alias for StationDecl.segments
-SegmentCombinator = Union[Phases, ShardByHash, ShardByPrefix, PartitionByDayOfMonth]
+SegmentCombinator = Union[
+    Phases,
+    ShardByHash,
+    ShardByPrefix,
+    ShardByCharIndex,
+    PartitionByDayOfMonth,
+]
 
 
 def collect_phases(segments: Sequence[object]) -> Optional[Phases]:
@@ -273,8 +318,8 @@ def collect_phases(segments: Sequence[object]) -> Optional[Phases]:
 
 def collect_shard(
     segments: Sequence[object],
-) -> Optional[Union[ShardByHash, ShardByPrefix]]:
+) -> Optional[Union[ShardByHash, ShardByPrefix, ShardByCharIndex]]:
     for s in segments:
-        if isinstance(s, (ShardByHash, ShardByPrefix)):
+        if isinstance(s, (ShardByHash, ShardByPrefix, ShardByCharIndex)):
             return s
     return None
