@@ -215,10 +215,9 @@ class ShardByCharIndex:
             if base.endswith(ext):
                 base = base[: -len(ext)]
                 break
-        if not base:
+        # Match cocli get_place_id_shard: short keys → fallback (not last char)
+        if not base or len(base) < self.index + 1:
             return self.fallback
-        if len(base) < self.index + 1:
-            return base[-1]
         char = base[self.index]
         return char if char.isalnum() else self.fallback
 

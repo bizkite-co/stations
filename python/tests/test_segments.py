@@ -55,7 +55,7 @@ def test_shard_by_char_index_place_id_sixth() -> None:
     s = shard_by_char_index(5)
     assert s.shard_for("ChIJ-5-rest") == "5"
     assert s.shard_for("ChIJ-5-rest.usv") == "5"
-    assert s.shard_for("ab") == "b"  # short: last char
+    assert s.shard_for("ab") == "_"  # short → fallback
 
 
 def test_partition_day_of_month_and_ttl() -> None:
