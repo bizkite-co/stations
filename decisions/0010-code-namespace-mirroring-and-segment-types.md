@@ -74,6 +74,7 @@ declared, importable combinators, each carrying its full contract:
 | :--- | :--- |
 | `phases("pending", "active", "completed")` | which phase dirs exist; legal phase transitions; claim/lease enumeration surface |
 | `shard_by_hash(n)` / `shard_by_prefix(k)` | routing a record to its shard; shard enumeration; fan-in for compaction |
+| `shard_by_char_index(i)` | routing by a single character of the identity key (e.g. place-id alphabet); see §3.1 |
 | `partition_by_day_of_month(ttl_days=…)` | partition naming; TTL/GC semantics; watermark interaction |
 
 This is the largest payoff of the model-as-path idiom identified so far:
@@ -84,6 +85,37 @@ prose descriptions repeated per layout. The claim protocol asks the phase
 combinator how to enumerate candidates; compaction asks the partition
 combinator what is expired — the P-rules and C-rules gain a vocabulary to
 attach to.
+
+### 3.1 Char-index shards: identity alphabet, not slugify
+
+Some identities are not free-form titles; they already have a **fixed
+alphabet** (Google Place IDs are base64-like and include both `-` and `_`
+as distinct characters). When a station shards by projecting a character
+from such an identity — `shard_by_char_index(i)` — the emitted path
+segment is a **value-level address component of the identity**, not a
+human label.
+
+Contract for char-index (and any combinator that projects identity
+characters into path segments):
+
+1. **Emit the character as stored in the identity.** Do not "filesystem-
+   sanitize" or slugify non-alnum characters into a shared fallback (e.g.
+   mapping both `-` and `_` to `_`). That collapses two identities into
+   one path prefix and breaks addressability of existing data.
+2. **Fallback is only for missing/short keys** (identity shorter than
+   `i+1`, or empty) — not for "this character looks awkward as a
+   directory name."
+3. **Code-namespace projection is a separate axis.** Decision §4's
+   `-`→`_` rule applies to *type-level* module/path identifiers when
+   mirroring station *names* into a language package tree. It MUST NOT
+   be applied to *value-level* storage shards derived from identity
+   keys. Storage may lawfully contain `pending/-/` and `pending/_/` as
+   two different shards.
+
+Provenance: cocli production paths under `queues/…/pending/-/` vs
+`pending/_/` are pure populations of place_ids whose sixth character is
+`-` or `_` respectively; an `isalnum`-slugify regression made place-id-
+only lookups miss the dash shard (2026-07-26).
 
 ### 4. Spec-side vs implementation-side (language portability)
 
@@ -108,9 +140,9 @@ the same way — the spec's declarative block is the shared truth.
 ### 5. Guardrails against frameworkiness
 
 - The initial combinator set is **closed and small**: phases, hash-shard,
-  prefix-shard, day partition. Everything observed in the existing
-  consumers is an instance of these four. The constraint is principled, not
-  arbitrary: it is the **few-leaves-many-branches** ratio of a healthy
+  prefix-shard, char-index shard, day partition. Everything observed in the
+  existing consumers is an instance of these. The constraint is principled,
+  not arbitrary: it is the **few-leaves-many-branches** ratio of a healthy
   plant (LINEAGE.md, "The biology of the pattern") — a handful of conserved
   organ types carrying unbounded branch variety. A proliferation of one-off
   leaf types is the smell this guardrail exists to catch.
@@ -124,6 +156,9 @@ the same way — the spec's declarative block is the shared truth.
 - Retroactive audit needed: existing station paths in cocli and
   task-agent must be checked against the identifier-segment discipline
   (§4a) before it becomes normative.
+- Char-index (and other identity-projection) shards MUST keep code and
+  storage aligned with §3.1; reference implementation tests pin `-` vs
+  `_` as distinct. PHYSICAL-CONTRACT §7 / P13 carry the portable MUST.
 - cocli's Phase 4 (husk deletion, decision 0006) is the natural trial
   moment: station definitions get re-homed into a mirrored
   `cocli/stations/` tree instead of back into `stations_runtime.py`.

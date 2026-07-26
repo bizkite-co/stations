@@ -207,9 +207,31 @@ folded records but MUST NOT miss unfolded ones (P12).
 ## 7. Sharding
 
 Sharding is a physical partitioning strategy orthogonal to role (DESCRIPTION thesis). The
-v1 scheme, where used: `shard = sha256(identity)[:2]` — 256 buckets, hex-named. The shard
-function MUST be deterministic from identity alone, and MUST be declared alongside the
-schema so independent writers compute the same placement (P13).
+shard function MUST be deterministic from identity alone, and MUST be declared alongside
+the schema (or station segment declaration) so independent writers compute the same
+placement (P13).
+
+Two families are recognized:
+
+| Family | Example | Path segment is… |
+| :--- | :--- | :--- |
+| **Hash-derived** | `sha256(identity)[:2]` (hex) | a digest of the identity (lossy by design) |
+| **Identity projection** | fixed-index character of a place_id | a **literal slice of the identity alphabet** |
+
+For **identity-projection** shards (char-at-index, prefix of a natural key when that
+prefix is part of the identity encoding):
+
+- The emitted segment MUST be the identity characters themselves (P14). Writers MUST NOT
+  "slugify" or filesystem-sanitize those characters into a shared substitute that
+  collapses distinct alphabet members (e.g. mapping both `-` and `_` to `_`).
+- A fallback shard name (commonly `_`) is permitted only when the identity is missing or
+  too short to supply the projected slice — not when a character is merely non-alnum.
+- Hash-derived shards are exempt from P14 (they are digests, not alphabet projections).
+
+This is the same spirit as P2 (path from immutable identity) applied to the *shard*
+component of the path, not only the leaf filename. See also
+[decision 0010 §3.1](../decisions/0010-code-namespace-mirroring-and-segment-types.md)
+(char-index combinator contract; storage shards vs code-namespace projection).
 
 ## 8. Invariants (summary)
 
@@ -228,6 +250,7 @@ schema so independent writers compute the same placement (P13).
 | P11 | Retained-mode watermarks are explicit in the commit record; mtime is never load-bearing |
 | P12 | Freshness scans may over-approximate, never under-approximate |
 | P13 | Shard placement is a declared deterministic function of identity |
+| P14 | Identity-projection shards emit identity alphabet characters unchanged; no slugify collapse |
 
 ## What this spec deliberately does not fix
 
