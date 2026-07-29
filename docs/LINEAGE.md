@@ -202,6 +202,75 @@ of organ types and unbounded branch variety. A proliferation of one-off leaf
 types would be the smell, which is exactly why decision 0010 keeps the
 combinator set closed and small.
 
+## The philology of the pattern
+
+The pattern is older than software. The observation that prompted this
+section: the author's own pre-cocli tooling already practiced it (`wrt`,
+below), pub-sub systems namespace themselves with a word that turns out to
+mean "place," and the trail runs back through the rhetoric tradition to
+Aristotle. The vocabulary of logic and of knowing has been place-and-stand
+vocabulary from the start — which is likely *why* stepwise, navigational
+language keeps resurfacing in logic-driven technologies.
+
+- **"Topic" means "place."** Aristotle's *Topics* (Τοπικά, from τόπος,
+  "place") catalogs the τόποι — the *places* an arguer goes to find
+  premises. One refinement to the intuition: Aristotle's places are less a
+  terrain traversed stepwise than a spatially-indexed toolbox of argument
+  shapes — which is why Latin rhetoric rendered them *loci*, and why English
+  still says "commonplace" (*locus communis*, κοινὸς τόπος). But the naming
+  survives intact: when Kafka and MQTT called their namespace nodes
+  **topics**, the messaging world reached — without knowing it — for the
+  same word this project reached for with "station." Two independent
+  derivations landing on place-words is the etymology-is-the-thesis claim
+  showing up again (see the topic-hierarchies bullet above).
+- **"Method" means "path."** Greek *méthodos*, *meta-* + *hodós* ("way,
+  road"): inquiry as travel along a way. The stepwise-navigation language
+  observed in logic-driven technologies is not a modern metaphor imported
+  into computing; it is the founding vocabulary of inquiry itself.
+- **The Tree of Porphyry — stepwise navigation of a type tree.** The honest
+  ancestor of "navigating to a logical domain through a sequence of steps":
+  Porphyry's *Isagoge* (3rd c. AD, the standard introduction to Aristotle's
+  *Categories*) arranges being as a tree — descent by differentiae through
+  genus and species to the individual — where following the path down *is*
+  constructing the definition. It is the ancestor of every taxonomy, class
+  hierarchy, and directory tree. Its root node is, literally, **Substance**.
+- **The memory arts — state at an address, in the head.** The method of loci
+  (Simonides' legend; codified in the *Rhetorica ad Herennium*, Cicero,
+  Quintilian): to remember, place items at addresses in an imagined
+  building; to recall, walk the path. Memory organized as a filesystem,
+  with retrieval as path traversal — the oldest evidence that addressable
+  places are the native indexing structure of human cognition.
+- **Commonplace books — the write side, and `wrt`'s direct ancestor.**
+  The practice built on the loci: readers kept notebooks under topical
+  headings, appended excerpts to the right heading as they read, and
+  periodically distilled them into indexes and florilegia. *Append to a
+  named place now, compact later* — the WAL discipline, practiced on paper
+  for centuries. The author's own pre-cocli PowerShell tool `wrt`
+  (`wrt -p cpt/characters/publicus "…"` appends into the file that a
+  `namespaces.yml` maps that path to, with a declared document type per
+  namespace) is a commonplace book with a manifest — and personal prior
+  art showing the stations idiom developing in this toolchain before it
+  had a name: path-to-namespace mapping, declared types per place,
+  append-then-compact.
+- **The stand-family — substance and understanding are station words.**
+  The etymology section claims *status/statio*; the family is wider, all
+  from the same root (PIE *\*steh₂-*, "stand"): **substance** (*substantia*,
+  what stands under), **understand** (stand under/among), **instance**
+  (*in-stare* — a record at a station is an instance in both senses),
+  **exist** (*ex-sistere*, to stand forth), **destination** (*destinare*,
+  where something is fixed to stand). The vocabulary of knowing is
+  stand-vocabulary and the vocabulary of logic is place-vocabulary; when a
+  record stands at a station, the language is operating at its root senses,
+  not in metaphor.
+
+Why the convergence keeps happening — hedged, but worth stating: spatial
+navigation is the oldest and best-tested indexing structure humans possess,
+so when a domain needs addressable structure, language reaches for places,
+paths, and standing. Path-shaped namespaces in technology (POSIX, REST,
+Hive, MQTT/UNS, stations) are then not a coincidence of fashion but the
+newest instances of the oldest pattern — which is a reason to trust the
+idiom's teachability: it runs on cognitive rails that predate literacy.
+
 ## Open threads worth traversing later
 
 - Petri-net formalization of CONCURRENCY.md's invariants (C1–C14) —
@@ -212,6 +281,11 @@ combinator set closed and small.
   retired.
 - A comparative note on maildir's NFS-safety arguments vs this spec's S3
   conditional-PUT arguments — same shape of reasoning, thirty years apart.
+- The philology thread, sourced properly: Aristotle's *Topics*, Porphyry's
+  *Isagoge*, and Frances Yates, *The Art of Memory* (1966) — the standard
+  history of the loci tradition. Also worth mining: commonplace-book
+  compaction practice (indexes, florilegia) as design precedent for
+  index-station and digest patterns.
 - Segment combinators (decision 0010): phase dirs, shards, and date
   partitions implemented once as declared, importable segment types —
   maildir's `tmp/new/cur`, task-agent's four phases, and day-of-month
