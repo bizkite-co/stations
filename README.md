@@ -12,9 +12,10 @@ name instead of reinventing it a fourth time.
 
 **Storage layout *is* the state machine.** A directory tree is bound to typed records; code
 only moves things between directories. There is no broker, scheduler, or server —
-concurrency is handled by storage semantics themselves (POSIX atomic rename locally, S3
-conditional writes remotely), and any process (or a human with `ls`, or DuckDB with a glob)
-can inspect mid-flight state without the framework being present.
+concurrency is handled by storage semantics themselves (create-if-absent of a sibling
+`{id}.lease` locally and on S3; CAS to reclaim; see [GLOSSARY.md](./GLOSSARY.md) § Claim /
+lease), and any process (or a human with `ls`, or DuckDB with a glob) can inspect
+mid-flight state without the framework being present.
 
 This inverts the usual relationship. In mainstream workflow frameworks the state machine
 lives in code and storage is a serialization detail. Here the storage layout is the state
@@ -41,19 +42,23 @@ machine, and code is just what moves things between states.
   vocabulary. Each onramp *links back* here rather than copying definitions — station
   membership is path-encoded and changes as records move, so identity beats path (see
   GLOSSARY.md § Cross-repo referencing).
-- **[python/](./python/)** — reference package: Protocols, `LocalPathBackend`,
-  `@transform` + `ApplicationBuilder`, and `stations inspect` (read-only). Engines
-  land later per [0006](./decisions/0006-strangler-migration-from-cocli.md).
+- **[python/](./python/)** — reference package: Protocols, `LocalPathBackend` +
+  `S3PathBackend`, queue/log/index edges, `DefaultTransformEngine` + `DefaultCompactor`,
+  `@transform` + `ApplicationBuilder`, and `stations inspect` (read-only). Consumer
+  cutover of production loops remains [0006](./decisions/0006-strangler-migration-from-cocli.md)
+  Phases 3–4.
 
 ## Status
 
 Pattern language + on-disk contract + Protocol surface are drafted; two systems
 (`cocli`, `task-agent`) dogfood the vocabulary. The Python package under `python/`
-ships Protocols, a minimal local backend, `@transform` ergonomics, and the read-only
-inspector ([0005](./decisions/0005-packaging-and-reference-implementation.md),
-[0008](./decisions/0008-burr-telemetry-and-transform-ergonomics.md)). Queue/log/index
-engines and S3 backend remain on the strangler plan
-([0006](./decisions/0006-strangler-migration-from-cocli.md)).
+ships Protocols, local and S3 backends with claim CAS helpers, queue/log/index edges,
+`DefaultTransformEngine` and `DefaultCompactor`, `@transform` ergonomics, and the
+read-only inspector ([0005](./decisions/0005-packaging-and-reference-implementation.md),
+[0008](./decisions/0008-burr-telemetry-and-transform-ergonomics.md)). What remains on
+the strangler plan is **consumer cutover** — pointing cocli production loops at those
+engines ([0006](./decisions/0006-strangler-migration-from-cocli.md) Phases 3–4) — not
+the engines themselves.
 
 ## Provenance
 

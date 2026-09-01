@@ -51,9 +51,19 @@ of a log for a different reader — hence edge roles attach to edges, not statio
 ## Claim / lease
 
 The per-backend primitive that lets exactly one worker take ownership of a queue item:
-POSIX atomic rename locally, S3 conditional PUT/If-None-Match remotely. This is the part
-general-purpose filesystem libraries (e.g. fsspec) don't provide — it's the actual
-load-bearing IP of any implementation of this pattern. Full state machine:
+**create-if-absent of a sibling `{id}.lease`** next to the payload
+(`open(O_CREAT|O_EXCL)` locally, `PutObject` + `If-None-Match: "*"` on S3). Success is
+ownership; `EEXIST` / 412 means someone else holds it. A directory listing is never a
+claim ([CONCURRENCY.md](./spec/CONCURRENCY.md) C2).
+
+The marker sits *beside* the item rather than renaming it, because S3 has no atomic
+rename — that is the one primitive that works on both backends
+([PHYSICAL-CONTRACT.md](./spec/PHYSICAL-CONTRACT.md) P5). Reclaim of an expired lease is
+replace-if-unchanged (CAS), never delete-then-create. Atomic rename locally is used for
+whole-file visibility (`tmp` → final) and for CAS-replace, **not** for the claim itself.
+
+This is the part general-purpose filesystem libraries (e.g. fsspec) don't provide — it's
+the actual load-bearing IP of any implementation of this pattern. Full state machine:
 [spec/CONCURRENCY.md](./spec/CONCURRENCY.md) §2.
 
 ## Single-writer rule

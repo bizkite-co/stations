@@ -6,13 +6,17 @@ Language-facing surface for the [stations](../) pattern language.
 
 - **Protocols** — pure `typing.Protocol` surface (`stations.protocols`).
 - **LocalPathBackend + S3PathBackend** — PathBackend with claim CAS primitives
-  (`create_if_absent`, `replace_if_match`) and `stations.backends.claim` helpers
-  (decision 0006 Phase 2).
+  (`create_if_absent`, `replace_if_match`) and `stations.backends.claim` helpers.
+  Claim is create-if-absent of a sibling `{id}.lease`, not a rename of the payload
+  (GLOSSARY § Claim / lease; CONCURRENCY §2).
+- **Queue / log / index edges** — `PathQueueEdge`, `PathLogEdge`, `PathIndexEdge`.
+- **Engines** — `DefaultTransformEngine` and `DefaultCompactor` (the Protocol
+  `TransformEngine` / `Compactor` implementations). Decision 0006 Phase 3 is
+  *consumer cutover* of cocli production loops onto these engines, not a future
+  package deliverable.
 - **`@transform` + ApplicationBuilder** — decorator ergonomics and assembly-time
   graph validation (decision 0008 / Burr lesson).
 - **`stations inspect`** — read-only terminal inspector for conforming station roots.
-
-Engines (`TransformEngine`, `Compactor`) arrive in strangler Phase 3 (decision 0006).
 
 ## Install (consumers)
 
@@ -71,10 +75,14 @@ python/
     ├── protocols.py
     ├── station.py          # StationDecl
     ├── transform.py        # @transform + ApplicationBuilder
+    ├── engine.py           # DefaultTransformEngine
+    ├── edges.py            # PathQueueEdge / PathLogEdge / PathIndexEdge
+    ├── compactor.py        # DefaultCompactor
     ├── inspect.py          # read-only aggregation + render
     ├── cli.py              # stations inspect
     └── backends/
-        └── local.py        # LocalPathBackend
+        ├── local.py        # LocalPathBackend
+        └── s3.py           # S3PathBackend
 ```
 
 ## Normative docs (repo root)

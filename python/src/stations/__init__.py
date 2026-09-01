@@ -1,8 +1,8 @@
 """Stations — typed file-path queue/WAL/index substrate (reference package).
 
 Exposes Protocols, PathBackends (local + S3) with claim CAS helpers,
-@transform + ApplicationBuilder, and a read-only inspector CLI. Engines
-(TransformEngine / Compactor) arrive in a later strangler phase.
+queue/log/index edges, DefaultTransformEngine / DefaultCompactor,
+@transform + ApplicationBuilder, and a read-only inspector CLI.
 """
 
 from stations.backends import (
@@ -159,4 +159,4 @@ __all__ = [
     "transform",
 ]
 
-__version__ = "0.5.4"
+__version__ = "0.5.5"
