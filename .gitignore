@@ -1,6 +1,9 @@
 .task-agent/
 .task-agent
 
+# Isolated task worktrees (never commit gitlinks)
+.gwt/
+
 # Python
 __pycache__/
 *.py[cod]

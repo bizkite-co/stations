@@ -1,8 +1,8 @@
 # Adoption: finding out whether anyone else wants this
 
-Working document. Last landscape fold: 2026-09-01 (feasibility review +
-cited report on the parent task
-`close-spec-impl-and-positioning-gaps-from-the-2026-feasibility-review`).
+Working document. Last landscape fold: 2026-09-01. Archived cited review
+(session tables + deep-research report):
+[docs/product/feasibility-cited-report.md](./product/feasibility-cited-report.md).
 
 The question it answers is not "how do we market stations" but the honest
 prior question: **would anyone besides its author use it, and how do we

@@ -28,6 +28,9 @@ machine, and code is just what moves things between states.
   Link here, don't redefine elsewhere.
 - **[METHOD.md](./METHOD.md)** — the Station Map procedure: how to point this vocabulary at
   an arbitrary existing system and have it produce its own conformance gap list.
+- **[docs/ADOPTION.md](./docs/ADOPTION.md)** — would anyone besides the author use this;
+  2026 landscape. Archived cited review:
+  [docs/product/feasibility-cited-report.md](./docs/product/feasibility-cited-report.md).
 - **[spec/](./spec/)** — the on-disk contract and its Python projection:
   [PHYSICAL-CONTRACT.md](./spec/PHYSICAL-CONTRACT.md) (bytes on disk),
   [CONCURRENCY.md](./spec/CONCURRENCY.md) (leases, compaction, crash recovery),
